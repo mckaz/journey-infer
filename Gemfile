@@ -1,12 +1,16 @@
 source "http://rubygems.org"
-ruby "2.1.2"
+#ruby "2.1.2"
 
+#gem 'rdl', path: "~/Documents/works/type-infer/rdl" #git: 'https://github.com/plum-umd/rdl.git', branch: 'infer'
+gem 'rdl', path: "~/Documents/works/checking_rdl/rdl"
+gem 'fuzzy_match'
 gem 'bundler'
 gem "rails", "= 4.2.9"
 gem 'paginator'
 gem 'will_paginate'
 gem "mysql2"
-gem "sqlite3", :groups => [:development, :test]
+#gem "sqlite3", '~> 1.4.1'#:groups => [:development, :test], 
+gem 'sqlite3', '~> 1.3.6'
 gem "xebec"
 gem "heroku_external_db", ">= 1.0.0"
 gem "jipe", ">= 2.0.1"
@@ -17,6 +21,9 @@ gem 'thin'
 gem 'figaro', '= 1.1.1'
 gem 'breach-mitigation-rails'
 gem 'builder'
+gem 'activeresource'
+
+
 
 gem 'haml'
 gem 'haml-rails'
@@ -29,7 +36,7 @@ group :assets do
   gem 'uglifier'
 end
 
-gem 'devise'
+gem 'devise', '~> 4.4.0'
 gem 'rubycas-client'
 gem 'devise_cas_authenticatable'
 gem 'cancancan'
@@ -65,3 +72,4 @@ group :development do
   gem 'capistrano-bundler', '~> 1.1', require: false
   gem 'capistrano-rbenv', '~> 2.0', require: false
 end
+

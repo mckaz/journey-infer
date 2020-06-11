@@ -194,7 +194,9 @@ class AnswerController < ApplicationController
         @resp.submitted_at = Time.now
         @resp.save
 
-        @questionnaire.email_notifications.notify_on_response_submit.includes(:person).each do |notification|
+        ## MKCHANGE: changed below because `notify_on_response_submit` comes from Rails scope
+        #@questionnaire.email_notifications.notify_on_response_submit.includes(:person).each do |notification|
+        @questionnaire.email_notifications.where(notify_on_response_submit: true).includes(:person).each do |notification|
           next unless notification.try(:person).try(:email).present?
           NotificationMailer.response_submitted(@resp, notification.person).deliver_later
         end

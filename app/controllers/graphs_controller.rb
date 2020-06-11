@@ -50,7 +50,7 @@ class GraphsController < ApplicationController
       @graph.data(answer, [count])
     end
 
-    @graph.title = truncate(@question.caption || "Untitled question")
+    #@graph.title = truncate(@question.caption || "Untitled question")
     set_journey_theme(@graph)
     
     render text: @graph.to_blob
@@ -93,7 +93,9 @@ class GraphsController < ApplicationController
     
     unless skip_no_answer
       Question.where(id: question_ids).find_each do |question|
-        no_answer = @questionnaire.responses.valid.no_answer_for(question).count()
+        ## MKCHANGE: get rid of use of rails scopes
+        #no_answer = @questionnaire.responses.valid.no_answer_for(question).count()
+        no_answer = @questionnaire.responses.where("responses.id in (select response_id from answers)").where("responses.id not in (select response_id from answers where question_id = ?)", question.id).count()
         if no_answer > 0
           counts[question.id]["No answer"] = no_answer
         end

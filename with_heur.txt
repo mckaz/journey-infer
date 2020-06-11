@@ -1,0 +1,60 @@
+Difference encountered for GraphsController#@max.
+Inferred: { GraphsController# var: @max }
+Original: Integer
+Difference encountered for GraphsController#@geom.
+Inferred: { GraphsController# var: @geom }
+Original: String
+Difference encountered for GraphsController#@graph.
+Inferred: (Gruff::Line or Gruff::Pie)
+Original: Gruff::Base
+Difference encountered for GraphsController#@series.
+Inferred: Hash<Question, []>
+Original: Hash<Question, Array<Integer>>
+Difference encountered for RootController#@page_title.
+Inferred: 'Dashboard'
+Original: String
+Difference encountered for RootController#@my_questionnaires.
+Inferred: { RootController# var: @my_questionnaires }
+Original: Array<Questionnaire>
+Difference encountered for QuestionnairesController#@questionnaires.
+Inferred: (ActiveRecord_Relation<Questionnaire> or Array<Questionnaire>)
+Original: ActiveRecord_Relation<JoinTable<Questionnaire, (Person or QuestionnairePermission or Tag)>>
+# 4
+Difference encountered for QuestionnairesController#@rss_url.
+Inferred: { QuestionnairesController# var: @rss_url }
+Original: String
+Difference encountered for AnswerController#@previewing.
+Inferred: true
+Original: (false or true)
+Difference encountered for _Globals#$!.
+Inferred: [ to_s: () -> String ]
+Original: String
+# 5
+Difference encountered for ResponsesCsvExporter#each_row.
+Inferred: () { (((Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })>)) -> { ResponsesCsvExporter#each_row block_ret: block_return } and ((Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })>)) -> { ResponsesCsvExporter#each_row block_ret: block_return } and ((Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })> or Array<(String or { { { { { ResponsesCsvExporter#answers_table ret: ret }#order ret: ret }#select ret: ret }#each block_arg: db_row }#[] ret: ret })>)) -> { ResponsesCsvExporter#each_row block_ret: block_return } and (Array<(DateTime or String or Time)>) -> { ResponsesCsvExporter#each_row block_ret: block_return }) } -> nil
+Original: () {(%any) -> %any} -> %any
+# 8
+Difference encountered for RootController#dashboard.
+Inferred: () -> (ActiveRecord_Relation<JoinTable<Response, Questionnaire>> or String)
+Original: () -> %any
+# 9
+Difference encountered for [s]Answer#find_answer.
+Inferred: ([ id: () -> { { [s]Answer#find_answer arg: resp }#id ret: ret } ], Question) -> Answer
+Original: (Response, Question) -> Answer
+# 11
+Difference encountered for QuestionnairePermission#email=.
+Inferred: ((String or Symbol)) -> (Array<String> or Person)
+Original: (String) -> %any
+# 13
+Difference encountered for RootController#index.
+Inferred: () -> String
+Original: () -> %any
+# 14
+Difference encountered for AnswerController#validate_answers.
+Inferred: ({ AnswerController#validate_answers arg: resp }, Page) -> Array<String>
+Original: (Response, Page) -> Array<String>
+# 16 manually counted correct
+Total correct (that could be automatically inferred): 36
+Total potential types: 59
+
+# Final: 52/59
