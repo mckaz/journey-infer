@@ -350,11 +350,8 @@ DEPENDENCIES
   will_paginate
   xebec
 
-<<<<<<< HEAD
-=======
 RUBY VERSION
    ruby 2.6.2p47
 
->>>>>>> 31e8cba1356dd289ff5a68ddbeaa8e6366718cdb
 BUNDLED WITH
    1.17.2
