@@ -1,8 +1,9 @@
 source "http://rubygems.org"
 #ruby "2.1.2"
 
-#gem 'rdl', path: "~/Documents/works/type-infer/rdl" #git: 'https://github.com/plum-umd/rdl.git', branch: 'infer'
-gem 'rdl', path: "~/Documents/works/checking_rdl/rdl"
+#gem 'rdl', git: 'https://github.com/tupl-tufts/rdl.git', branch: 'infer'
+#gem 'rdl', path: "~/Documents/works/tmp-rdl/rdl"
+gem 'rdl', git: "https://github.com/mckaz/dsl-infer-rdl", branch: 'infer'
 gem 'fuzzy_match'
 gem 'bundler'
 gem "rails", "= 4.2.9"

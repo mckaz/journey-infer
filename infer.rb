@@ -1,6 +1,10 @@
 Rails.application.eager_load! ## load Rails app
 DB = RailsSequel.connect
 
+#RDL::Config.instance.log_levels[:inference] = :debug
+#RDL::Config.instance.log_levels[:typecheck] = :debug
+#RDL::Config.instance.log_levels[:heuristic] = :trace
+
 RDL::Config.instance.number_mode = true
 
 require 'types/sequel'
@@ -61,15 +65,13 @@ RDL.type ResponsesCsvExporter, :rotate, "() -> %bool", wrap: false
 RDL.infer RootController, :index, time: :later # got it! as () -> String
 
 ## previous relies on these:
-RDL.infer Journey::SiteOptions, 'self.site_root', time: :later # got (%bot) -> %bot. output could be inferred with fixed point approach. input might be inferred with Bree's rule re: "if there are no upper bounds use lower bounds."
-RDL.infer_var_type Journey::SiteOptions, :@@site_root_if_logged_in
-RDL.infer_var_type Journey::SiteOptions, :@@site_root_if_logged_out
+#RDL.infer Journey::SiteOptions, 'self.site_root', time: :later # got (%bot) -> %bot. output could be inferred with fixed point approach. input might be inferred with Bree's rule re: "if there are no upper bounds use lower bounds."
 
 
 #RDL.type ApplicationController, :current_ability, "() -> Ability", wrap: false
 RDL.infer ApplicationController, :current_ability, time: :later
 
-RDL.infer Questionnaire, :tag_names, time: :later
+#RDL.infer Questionnaire, :tag_names, time: :later
 
 #RDL.type AnswerController, :answer_given, "(Integer) -> %bool", wrap: false
 RDL.infer AnswerController, :answer_given, time: :later
@@ -79,10 +81,10 @@ RDL.infer AnswerController, :answer_given, time: :later
 RDL.infer AnswerController, :validate_answers, time: :later
 
 #RDL.type Person, :name, "() -> String", wrap: false
-RDL.infer Person, :name, time: :later
+#RDL.infer Person, :name, time: :later
 
 #RDL.type Question, :purpose, '() -> String', wrap: false
-RDL.infer Question, :purpose, time: :later
+#RDL.infer Question, :purpose, time: :later
 
 
 
@@ -237,4 +239,4 @@ RDL.infer_var_type ResponsesController, :@questionnaire
 RDL.infer ResponsesController, :get_email_notification, time: :later
 =end
 
-RDL.do_infer :later
+RDL.do_infer :later, num_times: 11
