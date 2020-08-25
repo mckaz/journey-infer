@@ -1,12 +1,12 @@
 source "http://rubygems.org"
-#ruby "2.1.2"
+ruby "2.6.2"
 
 #gem 'rdl', git: 'https://github.com/tupl-tufts/rdl.git', branch: 'infer'
 #gem 'rdl', path: "~/Documents/works/tmp-rdl/rdl"
 gem 'rdl', git: "https://github.com/mckaz/dsl-infer-rdl", branch: 'infer'
 gem 'fuzzy_match'
 gem 'bundler'
-gem "rails", "= 4.2.9"
+gem "rails", "4.2.11.1"
 gem 'paginator'
 gem 'will_paginate'
 gem "mysql2"
@@ -29,7 +29,7 @@ gem 'activeresource'
 gem 'haml'
 gem 'haml-rails'
 gem 'prototype-rails', git: 'https://github.com/rails/prototype-rails.git', branch: '4.2'
-gem 'tinymce-rails'
+gem 'tinymce-rails', '= 4.6.7'
 
 group :assets do
   gem 'sass-rails'

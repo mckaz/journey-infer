@@ -67,4 +67,3 @@ Journey::Application.configure do
 
   config.action_mailer.asset_host = "https://secure.journeysurveys.com"
 end
-
