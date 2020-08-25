@@ -1,5 +1,5 @@
 source "http://rubygems.org"
-ruby "2.6.2"
+#ruby "2.6.2"
 
 #gem 'rdl', git: 'https://github.com/tupl-tufts/rdl.git', branch: 'infer'
 #gem 'rdl', path: "~/Documents/works/tmp-rdl/rdl"
