@@ -239,4 +239,5 @@ RDL.infer_var_type ResponsesController, :@questionnaire
 RDL.infer ResponsesController, :get_email_notification, time: :later
 =end
 
-RDL.do_infer :later, num_times: 11
+RDL.do_infer :later, num_times: 1
+

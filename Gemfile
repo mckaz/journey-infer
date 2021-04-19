@@ -2,8 +2,8 @@ source "http://rubygems.org"
 #ruby "2.6.2"
 
 #gem 'rdl', git: 'https://github.com/tupl-tufts/rdl.git', branch: 'infer'
-#gem 'rdl', path: "~/Documents/works/tmp-rdl/rdl"
-gem 'rdl', git: "https://github.com/mckaz/dsl-infer-rdl", branch: 'infer'
+gem 'rdl', path: "~/Documents/works/twin_rdl/rdl"
+#gem 'rdl', git: "https://github.com/mckaz/dsl-infer-rdl", branch: 'infer'
 gem 'fuzzy_match'
 gem 'bundler'
 gem "rails", "4.2.11.1"

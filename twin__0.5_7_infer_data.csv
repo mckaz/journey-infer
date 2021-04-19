@@ -1,5 +1,5 @@
-Class,Method,Inferred Type,Original Type,Source Code,Comments
-ResponsesCsvExporter,answers_table,"() -> Table<{ id: Number, response_id: Number, question_id: Number, value: String, created_at: (DateTime or Time), updated_at: (DateTime or Time), questionnaire_id: Number, saved_page: Number, submitted: (false or true), person_id: Number, submitted_at: (DateTime or Time), notes: String, type: String, position: Number, caption: String, required: (false or true), min: Number, max: Number, step: Number, page_id: Number, default_answer: String, layout: String, radio_layout: String, title: String, option: String, output_value: String, __all_joined: (:answers or :pages or :question_options or :questions or :responses), __last_joined: :question_options, __selected: nil, __orm: false }>","() -> Table<{ id: Number, response_id: Number, question_id: Number, value: String, created_at: (DateTime or Time), updated_at: (DateTime or Time), questionnaire_id: Number, saved_page: Number, submitted: (false or true), person_id: Number, submitted_at: (DateTime or Time), notes: String, type: String, position: Number, caption: String, required: (false or true), min: Number, max: Number, step: Number, page_id: Number, default_answer: String, layout: String, radio_layout: String, title: String, option: String, output_value: String, __all_joined: (:answers or :pages or :question_options or :questions or :responses), __last_joined: :question_options, __selected: nil, __orm: false }>","def answers_table
+Class,Method Name,Arg/Ret/Var,Variable Name,Inferred Type,Original Type,Exact (E) / Up to Parameter (P) / Got Type (T) / None (N),Solution Source,Source Code
+ResponsesCsvExporter,answers_table,Ret,"","Table<{ id: Number, response_id: Number, question_id: Number, value: String, created_at: (DateTime or Time), updated_at: (DateTime or Time), questionnaire_id: Number, saved_page: Number, submitted: (false or true), person_id: Number, submitted_at: (DateTime or Time), notes: String, type: String, position: Number, caption: String, required: (false or true), min: Number, max: Number, step: Number, page_id: Number, default_answer: String, layout: String, radio_layout: String, title: String, option: String, output_value: String, __all_joined: (:answers or :pages or :question_options or :questions or :responses), __last_joined: :question_options, __selected: nil, __orm: false }>","Table<{ id: Number, response_id: Number, question_id: Number, value: String, created_at: (DateTime or Time), updated_at: (DateTime or Time), questionnaire_id: Number, saved_page: Number, submitted: (false or true), person_id: Number, submitted_at: (DateTime or Time), notes: String, type: String, position: Number, caption: String, required: (false or true), min: Number, max: Number, step: Number, page_id: Number, default_answer: String, layout: String, radio_layout: String, title: String, option: String, output_value: String, __all_joined: (:answers or :pages or :question_options or :questions or :responses), __last_joined: :question_options, __selected: nil, __orm: false }>",E,Constraints,"def answers_table
     db[:answers].
       inner_join(:responses, :id => :response_id).
       inner_join(:questions, :id => Sequel.qualify(:answers, :question_id)).
@@ -7,7 +7,7 @@ ResponsesCsvExporter,answers_table,"() -> Table<{ id: Number, response_id: Numbe
       left_join(:question_options, :question_id => Sequel.qualify(:answers, :question_id), :option => Sequel.qualify(:answers, :value)).
       where(Sequel.qualify(:responses, :questionnaire_id) => questionnaire.id)
   end"
-ResponsesCsvExporter,each_row,() { ((Array<(DateTime or String or Time)>) -> XXX and (Array<(Number or String)>) -> XXX and (Array<String>) -> XXX) } -> nil,() {(%any) -> %any} -> %any,"def each_row
+ResponsesCsvExporter,each_row,Ret,"",nil,%any,E,Constraints,"def each_row
     if rotate
       valid_response_ids = db[:answers].select(:response_id).inner_join(:responses, :id => :response_id).where(:questionnaire_id => questionnaire.id)
 
@@ -87,7 +87,8 @@ ResponsesCsvExporter,each_row,() { ((Array<(DateTime or String or Time)>) -> XXX
       yield current_row if current_row
     end
   end"
-GraphsController,aggregate_questions,"((Array<Number> or Number)) -> Hash<Number, Hash<String, Number>>","((Array<Number> or Number)) -> Hash<Number, Hash<String, Number>>","def aggregate_questions(question_ids)
+GraphsController,@questionnaire,Var,@questionnaire,Questionnaire,Questionnaire,E,Twin,""
+GraphsController,aggregate_questions,Arg,question_ids,(Array<Number> or Number),(Array<Number> or Number),E,Constraints,"def aggregate_questions(question_ids)
     db = RailsSequel.connect
     
     skip_no_answer = params[:skip_no_answer]
@@ -130,7 +131,58 @@ GraphsController,aggregate_questions,"((Array<Number> or Number)) -> Hash<Number
     
     return counts
   end"
-GraphsController,line,() -> Array<String>,() -> Array<String>,"def line
+GraphsController,aggregate_questions,Ret,"","Hash<Number, Hash<String, Number>>","Hash<Number, Hash<String, Number>>",E,Constraints,"def aggregate_questions(question_ids)
+    db = RailsSequel.connect
+    
+    skip_no_answer = params[:skip_no_answer]
+          
+    ds = db[:answers]
+    ds = ds.inner_join(:questions, :id => :answers__question_id)
+    ds = ds.inner_join(:pages, :id => :questions__page_id)
+    ds = ds.left_join(:question_options, :question_id => :answers__question_id, :option => :answers__value)
+    ds = ds.where(:questions__id => question_ids)
+    ds = ds.where(:pages__questionnaire_id => @questionnaire.id)
+    ds = ds.select(:questions__id, :answers__value, :question_options__output_value)
+    
+    counts = {}
+    ds.each do |db_row|
+      question_id = db_row[:id]
+      value = (db_row[:output_value] || db_row[:value])
+      if value.blank?
+        if skip_no_answer
+          next
+        else
+          value = ""No answer""
+        end
+      end
+      
+      counts[question_id] ||= {}
+      counts[question_id][value] ||= 0
+      counts[question_id][value] += 1
+    end
+    
+    unless skip_no_answer
+      Question.where(id: question_ids).find_each do |question|
+        ## MKCHANGE: get rid of use of rails scopes
+        #no_answer = @questionnaire.responses.valid.no_answer_for(question).count()
+        no_answer = @questionnaire.responses.where(""responses.id in (select response_id from answers)"").where(""responses.id not in (select response_id from answers where question_id = ?)"", question.id).count()
+        if no_answer > 0
+          counts[question.id][""No answer""] = no_answer
+        end
+      end
+    end
+    
+    return counts
+  end"
+GraphsController,@questions,Var,@questions,ActiveRecord_Relation<Question>,ActiveRecord_Relation<Question>,E,Constraints,""
+GraphsController,@counts,Var,@counts,"Hash<Number, Hash<String, Number>>","Hash<Number, Hash<String, Number>>",E,Constraints,""
+GraphsController,@min,Var,@min,{ GraphsController# var: @min },Number,N,,""
+GraphsController,@max,Var,@max,Page,Number,T,Twin,""
+GraphsController,@geom,Var,@geom,Questionnaire,String,T,Twin,""
+GraphsController,@graph,Var,@graph,(Gruff::Line or Gruff::Pie),Gruff::Base,E,Constraints,""
+GraphsController,@labels,Var,@labels,"Hash<Number, String>","Hash<Number, String>",E,Constraints,""
+GraphsController,@series,Var,@series,"Hash<Question, Array<{ GraphsController#line array_param: array_param_#<Parser::Source::Map::Collection:0x00007fb5213e6b78> }>>","Hash<Question, Array<Number>>",P,Constraints,""
+GraphsController,line,Ret,"",Array<String>,Array<String>,E,Constraints,"def line
     authorize! :view_answers, @questionnaire
     
     @questions = Question.where(id: params[:question_ids]).all
@@ -162,7 +214,9 @@ GraphsController,line,() -> Array<String>,() -> Array<String>,"def line
     
     render text: @graph.to_blob
   end"
-GraphsController,pie,() -> Array<String>,() -> Array<String>,"def pie
+GraphsController,@answercounts,Var,@answercounts,"Hash<String, Number>","Hash<String, Number>",E,Constraints,""
+GraphsController,@question,Var,@question,Question,Question,E,Constraints,""
+GraphsController,pie,Ret,"",Array<String>,Array<String>,E,Constraints,"def pie
     authorize! :view_answers, @questionnaire
     
     @answercounts = aggregate_questions(params[:question_id]).values.first
@@ -179,10 +233,14 @@ GraphsController,pie,() -> Array<String>,() -> Array<String>,"def pie
     
     render text: @graph.to_blob
   end"
-RootController,get_new_questionnaires,() -> ActiveRecord_Relation<Questionnaire>,() -> ActiveRecord_Relation<Questionnaire>,"def get_new_questionnaires
+RootController,@new_questionnaires,Var,@new_questionnaires,ActiveRecord_Relation<Questionnaire>,ActiveRecord_Relation<Questionnaire>,E,Constraints,""
+RootController,get_new_questionnaires,Ret,"",ActiveRecord_Relation<Questionnaire>,ActiveRecord_Relation<Questionnaire>,E,Constraints,"def get_new_questionnaires
     @new_questionnaires = Questionnaire.where(:publicly_visible => true, :is_open => true).order(""published_at DESC"").limit(8)
   end"
-RootController,dashboard,"() -> (ActiveRecord_Relation<JoinTable<Response, Questionnaire>> or String)",() -> %any,"def dashboard
+RootController,@page_title,Var,@page_title,String,String,E,Constraints,""
+RootController,@my_questionnaires,Var,@my_questionnaires,Array<String>,Array<Questionnaire>,P,Twin,""
+RootController,@responses,Var,@responses,"ActiveRecord_Relation<JoinTable<Response, Questionnaire>>","ActiveRecord_Relation<JoinTable<Response, Questionnaire>>",E,Constraints,""
+RootController,dashboard,Ret,"","(ActiveRecord_Relation<JoinTable<Response, Questionnaire>> or String)",%any,E,Constraints,"def dashboard
     return index unless person_signed_in?
     
     @page_title = ""Dashboard""
@@ -192,13 +250,17 @@ RootController,dashboard,"() -> (ActiveRecord_Relation<JoinTable<Response, Quest
     
     @responses = Response.where(:person_id => current_person.id).includes(:questionnaire).order(:created_at => :desc).limit(8)
   end"
-RootController,index,() -> String,() -> %any,"def index
-    redirect_to Journey::SiteOptions.site_root(person_signed_in?), :status => 307
-  end"
-[s]Answer,find_answer,"(Response, Response) -> Answer","(Response, Question) -> Answer","def self.find_answer(resp, question)
+[s]Answer,find_answer,Arg,resp,[ id: () -> { { [s]Answer#find_answer arg: resp }#id call_ret: ret } ],Response,TS,Constraints,"def self.find_answer(resp, question)
     where(response_id: resp.id, question_id: question.id).first
   end"
-QuestionnairePermission,email=,((String or Symbol)) -> (Array<String> or Person),(String) -> %any,"def email=(email)
+[s]Answer,find_answer,Arg,question,[ id: () -> { { [s]Answer#find_answer arg: question }#id call_ret: ret } ],Question,TS,Constraints,"def self.find_answer(resp, question)
+    where(response_id: resp.id, question_id: question.id).first
+  end"
+[s]Answer,find_answer,Ret,"",Answer,Answer,E,Constraints,"def self.find_answer(resp, question)
+    where(response_id: resp.id, question_id: question.id).first
+  end"
+_Globals,$!,Var,$!,Array<String>,String,T,Twin,""
+QuestionnairePermission,email=,Arg,email,(String or Symbol),String,E,Constraints,"def email=(email)
     if email.blank?
       self.person = nil
       return
@@ -222,10 +284,39 @@ QuestionnairePermission,email=,((String or Symbol)) -> (Array<String> or Person)
       end
     end
   end"
-Response,answer_for_question,(XXX) -> Answer,(Question) -> Answer,"def answer_for_question(question)
+QuestionnairePermission,email=,Ret,"",(Array<String> or Person),%any,E,Constraints,"def email=(email)
+    if email.blank?
+      self.person = nil
+      return
+    end
+    
+    logger.info ""Trying to find person with email #{email}""
+    self.person = Person.find_by(email: email)
+    if email and self.person.nil?
+      logger.info ""Not found, trying Illyan invite""
+      begin
+        invitee = IllyanClient::Person.new(:person => { :email => email })
+        invitee.save
+        logger.info ""Invite successful!  Got back #{invitee.inspect}""
+        
+        invitee_attrs = invitee.attributes
+        self.person = Person.create(:email => email, :username => email, :firstname => invitee_attrs[""firstname""], 
+          :lastname => invitee_attrs[""lastname""], :gender => invitee_attrs[""gender""], :birthdate => RDL.type_cast(invitee_attrs[""birthdate""], ""DateTime"")) ## MKCHANGE
+      rescue
+        logger.error ""Error during invite: #{$!}""
+        errors.add(:base, ""Error inviting new user #{email}: $!"")
+      end
+    end
+  end"
+Response,answer_for_question,Arg,question,{ Response#answer_for_question arg: question },Question,N,,"def answer_for_question(question)
     answers.select { |a| a.question == question }[0]
   end"
-QuestionnairesController,index,() -> (Array<String> or String),() -> (Array<String> or String),"def index
+Response,answer_for_question,Ret,"",Answer,Answer,E,Constraints,"def answer_for_question(question)
+    answers.select { |a| a.question == question }[0]
+  end"
+QuestionnairesController,@questionnaires,Var,@questionnaires,Array<String>,"ActiveRecord_Relation<JoinTable<Questionnaire, (Person or QuestionnairePermission or Tag)>>",P,Twin,""
+QuestionnairesController,@rss_url,Var,@rss_url,String,String,E,Twin,""
+QuestionnairesController,index,Ret,"",(Array<String> or String),(Array<String> or String),E,Constraints,"def index
     p = person_signed_in? ? current_person : nil
     per_page = 12
     conditions = []
@@ -255,7 +346,8 @@ QuestionnairesController,index,() -> (Array<String> or String),() -> (Array<Stri
       format.rss  { render :layout => false }
     end
   end"
-QuestionnairesController,show,() -> (Array<String> or String),() -> (Array<String> or String),"def show
+QuestionnairesController,@questionnaire,Var,@questionnaire,Questionnaire,Questionnaire,E,Constraints,""
+QuestionnairesController,show,Ret,"",(Array<String> or String),(Array<String> or String),E,Constraints,"def show
     @questionnaire = Questionnaire.find(params[:id])
     authorize! :view_edit_pages, @questionnaire
     attributes = params[:attributes] || @questionnaire.attribute_names
@@ -280,10 +372,14 @@ QuestionnairesController,show,() -> (Array<String> or String),() -> (Array<Strin
       end
     end
   end"
-AnswerController,get_questionnaire,() -> Questionnaire,() -> Questionnaire,"def get_questionnaire
+AnswerController,@questionnaire,Var,@questionnaire,Questionnaire,Questionnaire,E,Constraints,""
+AnswerController,get_questionnaire,Ret,"",Questionnaire,Questionnaire,E,Constraints,"def get_questionnaire
     @questionnaire = Questionnaire.find params[:id]
   end"
-AnswerController,save_answers,() -> String,() -> String,"def save_answers
+AnswerController,@resp,Var,@resp,Response,Response,E,Constraints,""
+AnswerController,@page,Var,@page,Page,Page,E,Constraints,""
+AnswerController,@error_messages,Var,@error_messages,Array<String>,Array<String>,E,Constraints,""
+AnswerController,save_answers,Ret,"",String,String,E,Constraints,"def save_answers
     @resp = Response.find(session[""response_#{params[:id]}""])
     @page = @resp.questionnaire.pages[params[:current_page].to_i - 1]
 
@@ -349,7 +445,8 @@ AnswerController,save_answers,() -> String,() -> String,"def save_answers
       end
     end
   end"
-AnswerController,preview,() -> Array<String>,() -> Array<String>,"def preview
+AnswerController,@previewing,Var,@previewing,(false or true),(false or true),E,Constraints,""
+AnswerController,preview,Ret,"",Array<String>,Array<String>,E,Constraints,"def preview
     @questionnaire = Questionnaire.includes(:questionnaire_permissions, :pages).find(params[:id])
 
     if @questionnaire.pages.size > 0
@@ -362,10 +459,10 @@ AnswerController,preview,() -> Array<String>,() -> Array<String>,"def preview
       render :action => ""prompt""
     end
   end"
-AnswerController,questionnaire_closed,() -> Questionnaire,() -> Questionnaire,"def questionnaire_closed
+AnswerController,questionnaire_closed,Ret,"",Questionnaire,Questionnaire,E,Constraints,"def questionnaire_closed
     @questionnaire = Questionnaire.find(params[:id])
   end"
-AnswerController,prompt,() -> Array<Response>,() -> Array<Response>,"def prompt
+AnswerController,prompt,Ret,"",Array<Response>,Array<Response>,E,Constraints,"def prompt
     @all_responses = []
     @responses = []
     if person_signed_in?
@@ -378,7 +475,7 @@ AnswerController,prompt,() -> Array<Response>,() -> Array<Response>,"def prompt
       end
     end
   end"
-AnswerController,resume,() -> String,() -> String,"def resume
+AnswerController,resume,Ret,"",String,String,E,Constraints,"def resume
     @resp = Response.find(params[:id])
     if @resp.person != current_person
       raise ""That response does not belong to you.  Either log in as a different person, or start a new response.""
@@ -405,11 +502,26 @@ AnswerController,resume,() -> String,() -> String,"def resume
     flash[:error_messages] = [$!.to_s]
     redirect_to :action => 'prompt', :id => @resp.questionnaire.id
   end"
-AnswerController,answer_given,([ to_s: () -> String ]) -> (false or true),(Number) -> (false or true),"def answer_given(question_id)
+ResponsesController,@questionnaire,Var,@questionnaire,Questionnaire,Questionnaire,E,Twin,""
+ResponsesController,@email_notification,Var,@email_notification,EmailNotification,EmailNotification,E,Constraints,""
+ResponsesController,get_email_notification,Ret,"",EmailNotification,EmailNotification,E,Constraints,"def get_email_notification
+    @email_notification = @questionnaire.email_notifications.where(person_id: current_person.id).first
+  end"
+RootController,index,Ret,"",String,%any,E,Constraints,"def index
+    redirect_to Journey::SiteOptions.site_root(person_signed_in?), :status => 307
+  end"
+ApplicationController,current_ability,Ret,"",Ability,Ability,E,Constraints,"def current_ability
+    Ability.new(current_person)
+  end"
+AnswerController,answer_given,Arg,question_id,[ to_s: () -> String ],Number,TS,Constraints,"def answer_given(question_id)
     return (params[:question] and not params[:question][question_id.to_s].blank? and
       params[:question][question_id.to_s].length > 0)
   end"
-AnswerController,validate_answers,"(Response, [ questions: () -> XXX ]) -> Array<String>","(Response, Page) -> Array<String>","def validate_answers(resp, page)
+AnswerController,answer_given,Ret,"",(false or true),(false or true),E,Constraints,"def answer_given(question_id)
+    return (params[:question] and not params[:question][question_id.to_s].blank? and
+      params[:question][question_id.to_s].length > 0)
+  end"
+AnswerController,validate_answers,Arg,resp,{ AnswerController#validate_answers arg: resp },Response,N,,"def validate_answers(resp, page)
     errors = []
     page.questions.each do |question|
       if question.kind_of? Questions::Field and question.required
@@ -420,9 +532,34 @@ AnswerController,validate_answers,"(Response, [ questions: () -> XXX ]) -> Array
     end
     return errors
   end"
-ResponsesController,get_email_notification,() -> EmailNotification,() -> EmailNotification,"def get_email_notification
-    @email_notification = @questionnaire.email_notifications.where(person_id: current_person.id).first
+AnswerController,validate_answers,Arg,page,Page,Page,E,Twin,"def validate_answers(resp, page)
+    errors = []
+    page.questions.each do |question|
+      if question.kind_of? Questions::Field and question.required
+        if not answer_given(question.id)
+            errors << ""You didn't answer the question \""#{question.caption}\"", which is required.""
+        end
+      end
+    end
+    return errors
   end"
-ApplicationController,current_ability,() -> Ability,() -> Ability,"def current_ability
-    Ability.new(current_person)
+AnswerController,validate_answers,Ret,"",Array<String>,Array<String>,E,Constraints,"def validate_answers(resp, page)
+    errors = []
+    page.questions.each do |question|
+      if question.kind_of? Questions::Field and question.required
+        if not answer_given(question.id)
+            errors << ""You didn't answer the question \""#{question.caption}\"", which is required.""
+        end
+      end
+    end
+    return errors
   end"
+Total # E:,45
+Total # P:,3
+Total # T:,3
+Total # TS:,3
+Total # N:,3
+Total # return types:,23
+Total # arg types:,8
+Total # var types:,26
+Total # individual types:,57
